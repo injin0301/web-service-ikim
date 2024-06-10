@@ -1,0 +1,51 @@
+version: '3.8'
+services:
+  auth-api:
+    build: ./webservice_auth_api
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./webservice_auth_api/src/.env
+    environment:
+      - NODE_ENV=production
+      - AUTH_API_URL=http://auth-api
+      - FILM_API_URL=http://movies-api
+      - RESERVATION_API_URL=http://reservations-api
+  movies-api:
+    build: ./webservice_films_api
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./webservice_films_api/src/.env
+    environment:
+      - NODE_ENV=production
+      - AUTH_API_URL=http://auth-api
+      - FILM_API_URL=http://movies-api
+      - RESERVATION_API_URL=http://reservations-api
+  reservations-api:
+    build: ./webservice_reservation_api
+    ports:
+      - "3003:3003"
+    env_file:
+      - ./webservice_reservation_api/src/.env
+    environment:
+      - NODE_ENV=production
+      - AUTH_API_URL=http://auth-api
+      - FILM_API_URL=http://movies-api
+      - RESERVATION_API_URL=http://reservations-api  
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+        test: rabbitmq-diagnostics -q ping
+        interval: 20s
+        timeout: 20s
+        retries: 3
+  mail:
+    build: ./webservice_mail
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
